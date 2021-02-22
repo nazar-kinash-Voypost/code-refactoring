@@ -22,7 +22,7 @@ import MuiAlert from "@material-ui/lab/Alert";
 
 import { CloseOutlined as CloseOutlinedIcon } from "@material-ui/icons";
 
-import { PdfPreview } from "./";
+import { PdfPreview } from "..";
 import { makeStyles } from "@material-ui/core/styles";
 import { MuiPickersUtilsProvider, DatePicker } from "@material-ui/pickers";
 import { red, blue } from "@material-ui/core/colors";
@@ -255,7 +255,7 @@ export const createLink = (
   userEmail: string,
   messageId: string | null | undefined,
   isDone: boolean | null | undefined,
-  isDeleted: boolean | null | undefined,
+  isDeleted: boolean | null | undefined
 ): string => {
   if (isDone) {
     return `/messages/done/${messageId}`;
@@ -291,10 +291,7 @@ const EventDetails = ({
   isMessageDone,
   isMessageDeleted,
 }: EventDetailsProps) => {
-  const {
-    data: sharedData,
-    loading: sharedDataLoading,
-  } = useGetSharedAccessQuery();
+  const { data: sharedData, loading: sharedDataLoading } = useGetSharedAccessQuery();
 
   const classes = useStyles();
 
@@ -302,10 +299,7 @@ const EventDetails = ({
     updateEventMutation,
     { data: updateEventData, loading: updateLoading, error: updateError },
   ] = useUpdateEventMutation();
-  const [
-    getNotificationSettings,
-    { data: notificationSettingsData },
-  ] = useGetNotificationSettingsByTagLazyQuery();
+  const [getNotificationSettings, { data: notificationSettingsData }] = useGetNotificationSettingsByTagLazyQuery();
 
   const [deleteEventMutation] = useDeleteEventMutation({
     onCompleted: async () => {
@@ -340,8 +334,7 @@ const EventDetails = ({
 
   const now = moment();
   const oneHourFuture = moment(now).add(1, "hours");
-  const nowDateEndDate =
-    Number(moment(now).format("HH")) >= 23 ? moment(now).add(1, "day") : now;
+  const nowDateEndDate = Number(moment(now).format("HH")) >= 23 ? moment(now).add(1, "day") : now;
   const [allDay, setAllDay] = useState<boolean>(false);
   const [isOpenModalConfirm, setIsOpenModalConfirm] = useState<boolean>(false);
   const [allDayBufferStartTime, setAllDayBufferStartTime] = useState("00:00");
@@ -350,32 +343,22 @@ const EventDetails = ({
   const [notifications, setNotifications] = useState<object[]>([]);
   const [sharingUsers, setSharingUsers] = useState<User[]>([]);
   const [files, setFiles] = useState<File[]>([]);
-  const [sharedDataAccess, setSharedDataAccess] = useState<
-    GetSharedAccessQuery | undefined | null
-  >(null);
+  const [sharedDataAccess, setSharedDataAccess] = useState<GetSharedAccessQuery | undefined | null>(null);
   const initialEventForm: any = {
     ...message?.eventPreview,
     ...message?.eventInfo,
     ...event,
-    startDate: moment(
-      event?.startTime || message?.eventInfo?.startTime || now,
-    ).format("l"),
-    startTime: moment(
-      event?.startTime || message?.eventInfo?.startTime || now,
-    ).format("HH:mm"),
-    endTime: moment(
-      event?.endTime || message?.eventInfo?.endTime || oneHourFuture,
-    ).format("HH:mm"),
-    endDate: moment(
-      event?.endTime || message?.eventInfo?.startTime || nowDateEndDate,
-    ).format("l"),
+    startDate: moment(event?.startTime || message?.eventInfo?.startTime || now).format("l"),
+    startTime: moment(event?.startTime || message?.eventInfo?.startTime || now).format("HH:mm"),
+    endTime: moment(event?.endTime || message?.eventInfo?.endTime || oneHourFuture).format("HH:mm"),
+    endDate: moment(event?.endTime || message?.eventInfo?.startTime || nowDateEndDate).format("l"),
     notifications: notifications,
   };
 
   const reducer = (
     // TODO: Fix the types. In rush atm to demo this.
     state: any,
-    { field, value }: { field: string; value?: string },
+    { field, value }: { field: string; value?: string }
   ) => {
     if (field === "reset") {
       return initialEventForm;
@@ -385,17 +368,12 @@ const EventDetails = ({
       if (action === "add") {
         return {
           ...state,
-          notifications: [
-            ...state.notifications,
-            { userId: "none", period: "1", periodType: "Hour" },
-          ],
+          notifications: [...state.notifications, { userId: "none", period: "1", periodType: "Hour" }],
         };
       } else if (action === "remove") {
         return {
           ...state,
-          notifications: state.notifications.filter(
-            (el: NotificationItem, i: number) => i !== Number(index),
-          ),
+          notifications: state.notifications.filter((el: NotificationItem, i: number) => i !== Number(index)),
         };
       } else if (action === "periodType") {
         const updatedArray: NotificationItem[] = [...state.notifications];
@@ -431,29 +409,22 @@ const EventDetails = ({
       if (value) {
         const timeDif = differenceInMinutes(
           new Date(event?.endTime || oneHourFuture),
-          new Date(event?.startTime || now),
+          new Date(event?.startTime || now)
         );
 
         const parsedDate = parse(value, "HH:mm", new Date());
         const endTime = addMinutes(parsedDate, timeDif);
         return {
           ...state,
-          startTime: isValid(parsedDate)
-            ? format(parsedDate, "HH:mm")
-            : state.startTime,
-          endTime: isValid(parsedDate)
-            ? format(endTime, "HH:mm")
-            : state.endTime,
+          startTime: isValid(parsedDate) ? format(parsedDate, "HH:mm") : state.startTime,
+          endTime: isValid(parsedDate) ? format(endTime, "HH:mm") : state.endTime,
         };
       }
       return { ...state, [field]: value };
     }
     if (field === "startDate") {
       if (value) {
-        const timeDif = differenceInDays(
-          new Date(event?.endTime || oneHourFuture),
-          new Date(event?.startTime || now),
-        );
+        const timeDif = differenceInDays(new Date(event?.endTime || oneHourFuture), new Date(event?.startTime || now));
 
         const addDaysDate = addDays(new Date(value), timeDif);
         const endDate = format(addDaysDate, "M/d/Y");
@@ -530,15 +501,9 @@ const EventDetails = ({
   };
 
   const normaliseEventForm = (): UpdateEventInput => {
-    const startTime = moment(
-      `${eventForm.startDate} ${eventForm.startTime}`,
-      "l HH:mm",
-    ).format();
+    const startTime = moment(`${eventForm.startDate} ${eventForm.startTime}`, "l HH:mm").format();
 
-    const endTime = moment(
-      `${eventForm.endDate} ${eventForm.endTime}`,
-      "l HH:mm",
-    ).format();
+    const endTime = moment(`${eventForm.endDate} ${eventForm.endTime}`, "l HH:mm").format();
 
     let startTimeUTC = startTime;
     let endTimeUTC = endTime;
@@ -573,15 +538,7 @@ const EventDetails = ({
   const handleFormSave = async (eventDom: React.FormEvent<HTMLFormElement>) => {
     eventDom.preventDefault();
 
-    const {
-      title,
-      startTime,
-      endTime,
-      location,
-      description,
-      notifications,
-      attachmentIds,
-    } = normaliseEventForm();
+    const { title, startTime, endTime, location, description, notifications, attachmentIds } = normaliseEventForm();
 
     if (event) {
       await updateEventMutation({
@@ -681,19 +638,13 @@ const EventDetails = ({
   }, [createEventData, createError, setOpen]);
 
   useEffect(() => {
-    const chipSharedAccessValues: string[] = sharedDataAccess?.sharedAccess
-      ?.targetUsers
-      ? sharedDataAccess.sharedAccess.targetUsers.map(
-          (user: User) => `${user?.name}'s Calendar`,
-        )
+    const chipSharedAccessValues: string[] = sharedDataAccess?.sharedAccess?.targetUsers
+      ? sharedDataAccess.sharedAccess.targetUsers.map((user: User) => `${user?.name}'s Calendar`)
       : [];
 
     let userCalendars: string[] = [];
     if (currentUser) {
-      userCalendars =
-        currentUser.eventCalendars.map(
-          (calendar: Calendar) => `${calendar.name}`,
-        ) || [];
+      userCalendars = currentUser.eventCalendars.map((calendar: Calendar) => `${calendar.name}`) || [];
     }
 
     const chipValues = [...chipSharedAccessValues, ...userCalendars];
@@ -729,19 +680,17 @@ const EventDetails = ({
           notificationSettingsData?.notificationSettingsByTag?.items &&
           notificationSettingsData?.notificationSettingsByTag?.items?.length > 0
         ) {
-          notificationSettingsData.notificationSettingsByTag.items.forEach(
-            (item) => {
-              const { type, value } = convertMStoTimeLeft(item.notifyBefore);
-              const tsType = type as keyof typeof periodTypeMap;
-              sharedUsers.forEach((sharedUser) => {
-                initialNotificationPeriod.push({
-                  userId: sharedUser.id,
-                  periodType: periodTypeMap[tsType] as PeriodType,
-                  period: value.toString(),
-                });
+          notificationSettingsData.notificationSettingsByTag.items.forEach((item) => {
+            const { type, value } = convertMStoTimeLeft(item.notifyBefore);
+            const tsType = type as keyof typeof periodTypeMap;
+            sharedUsers.forEach((sharedUser) => {
+              initialNotificationPeriod.push({
+                userId: sharedUser.id,
+                periodType: periodTypeMap[tsType] as PeriodType,
+                period: value.toString(),
               });
-            },
-          );
+            });
+          });
         } else {
           sharedUsers.forEach((sharedUser) => {
             initialNotificationPeriod.push({
@@ -753,9 +702,7 @@ const EventDetails = ({
         }
       } else if (event?.notifications && event?.notifications?.length > 0) {
         event.notifications.forEach((notififcation) => {
-          const { type, value } = convertMStoTimeLeft(
-            notififcation.notifyBefore,
-          );
+          const { type, value } = convertMStoTimeLeft(notififcation.notifyBefore);
           const tsType = type as keyof typeof periodTypeMap;
           initialNotificationPeriod.push({
             userId: notififcation.userId,
@@ -767,13 +714,7 @@ const EventDetails = ({
       setNotifications(initialNotificationPeriod);
       setSharingUsers(sharedUsers);
     }
-  }, [
-    event,
-    sharedDataLoading,
-    notificationSettingsData,
-    currentUser,
-    sharedData,
-  ]);
+  }, [event, sharedDataLoading, notificationSettingsData, currentUser, sharedData]);
 
   const handleDialogClose = () => {
     setOpen(false);
@@ -799,9 +740,7 @@ const EventDetails = ({
         value: allDayBufferEndTime,
       });
     } else {
-      const isAfter = moment(moment(eventForm.startDate).format("l")).isAfter(
-        eventForm.endDate,
-      );
+      const isAfter = moment(moment(eventForm.startDate).format("l")).isAfter(eventForm.endDate);
 
       if (isAfter) {
         dispatch({
@@ -842,15 +781,9 @@ const EventDetails = ({
   };
 
   // 16:00 => 1600 for number mask
-  const convertTimeStringToNumber = (timeString: string) =>
-    timeString.split(":").join("");
+  const convertTimeStringToNumber = (timeString: string) => timeString.split(":").join("");
 
-  const link = createLink(
-    currentUser.email,
-    messageId,
-    isMessageDone,
-    isMessageDeleted,
-  );
+  const link = createLink(currentUser.email, messageId, isMessageDone, isMessageDeleted);
 
   const handleClose = () => setIsOpenModalConfirm(false);
 
@@ -892,12 +825,7 @@ const EventDetails = ({
         <DialogContent>
           <form onSubmit={handleFormSave}>
             <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <Grid
-                className={classes.headerPart}
-                container
-                spacing={2}
-                alignItems="center"
-              >
+              <Grid className={classes.headerPart} container spacing={2} alignItems="center">
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
@@ -963,11 +891,7 @@ const EventDetails = ({
                       }
                     />
                   </div>
-                  <div
-                    className={`${classes.dateCol} ${classes.paddingBottom}`}
-                  >
-                    To
-                  </div>
+                  <div className={`${classes.dateCol} ${classes.paddingBottom}`}>To</div>
                   <div className={classes.dateCol}>
                     <MuiPickersUtilsProvider utils={DateFnsUtils}>
                       <DatePicker
@@ -1023,9 +947,7 @@ const EventDetails = ({
                       }
                     />
                   </div>
-                  <div
-                    className={`${classes.dateCol} ${classes.paddingBottom}`}
-                  >
+                  <div className={`${classes.dateCol} ${classes.paddingBottom}`}>
                     <FormControlLabel
                       control={
                         <Switch
@@ -1047,31 +969,19 @@ const EventDetails = ({
               </Grid>
               <Grid container spacing={2} alignItems="center">
                 <Grid item xs={9}>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    variant="outlined"
-                    label="Calendar"
-                    value={calendarChips}
-                  />
+                  <TextField fullWidth size="small" variant="outlined" label="Calendar" value={calendarChips} />
                 </Grid>
                 <Grid
                   item
                   container
                   xs={3}
                   alignItems="center"
-                  className={
-                    hasGraphQlConflictError() ? classes.conflictError : ""
-                  }
+                  className={hasGraphQlConflictError() ? classes.conflictError : ""}
                 >
                   <Box display="flex" mt={4}>
                     <ErrorOutlineIcon className={classes.icon} />
                     &nbsp;
-                    {event?.conflict || hasGraphQlConflictError() ? (
-                      <>Has conflict.</>
-                    ) : (
-                      <>No Conflict</>
-                    )}
+                    {event?.conflict || hasGraphQlConflictError() ? <>Has conflict.</> : <>No Conflict</>}
                   </Box>
                 </Grid>
                 <Grid item xs={12}>
@@ -1103,11 +1013,7 @@ const EventDetails = ({
                             className: classes.multilineColor,
                           }}
                           value={
-                            messageTitle ||
-                            message?.caseStyle ||
-                            message?.subject ||
-                            event?.message?.caseStyle ||
-                            ""
+                            messageTitle || message?.caseStyle || message?.subject || event?.message?.caseStyle || ""
                           }
                         />
                       </Link>
@@ -1115,9 +1021,7 @@ const EventDetails = ({
                     <Grid item xs={6}>
                       <ChipsInput
                         value={
-                          event?.message?.tags?.map((tag) => tag.name) ||
-                          message?.tags.map((tag) => tag.name) ||
-                          []
+                          event?.message?.tags?.map((tag) => tag.name) || message?.tags.map((tag) => tag.name) || []
                         }
                         label="Category:"
                         isLineType
@@ -1127,81 +1031,77 @@ const EventDetails = ({
                     </Grid>
                   </Grid>
                 </Grid>
-                {eventForm.notifications.map(
-                  (notify: NotificationItem, index: number) => (
-                    <>
-                      <Grid item xs={4}>
-                        <FormControl variant="outlined" size="small" fullWidth>
-                          <Select
-                            value={notify.userId}
-                            onChange={(e) =>
-                              dispatch({
-                                field: `notification:${index}:userId`,
-                                value: e.target.value as string,
-                              })
-                            }
-                          >
-                            <MenuItem value="none">
-                              <em>None</em>
-                            </MenuItem>
-                            {sharingUsers.map((item) => (
-                              <MenuItem value={item.id} key={item.id}>
-                                <em>{`${item.name} (Notification)`}</em>
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      </Grid>
-                      <Grid item xs={2}>
-                        <TextFieldMaterial
-                          fullWidth
-                          value={notify.period}
-                          type="number"
-                          size="small"
-                          variant="outlined"
+                {eventForm.notifications.map((notify: NotificationItem, index: number) => (
+                  <>
+                    <Grid item xs={4}>
+                      <FormControl variant="outlined" size="small" fullWidth>
+                        <Select
+                          value={notify.userId}
                           onChange={(e) =>
                             dispatch({
-                              field: `notification:${index}:period`,
+                              field: `notification:${index}:userId`,
                               value: e.target.value as string,
                             })
                           }
-                        />
-                      </Grid>
-                      <Grid item xs={3}>
-                        <FormControl variant="outlined" size="small" fullWidth>
-                          <Select
-                            value={notify.periodType}
-                            onChange={(e) =>
-                              dispatch({
-                                field: `notification:${index}:periodType`,
-                                value: e.target.value as string,
-                              })
-                            }
-                          >
-                            {periodTypes.map((periodType) => (
-                              <MenuItem key={periodType} value={periodType}>
-                                {`${periodType}${
-                                  notify.period === "1" ? "" : "s"
-                                } Before`}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      </Grid>
-                      <Grid item xs={2}>
-                        <IconButton
-                          onClick={() => {
-                            dispatch({
-                              field: `notification:${index}:remove`,
-                            });
-                          }}
                         >
-                          <CloseOutlinedIcon className={classes.closeIcon} />
-                        </IconButton>
-                      </Grid>
-                    </>
-                  ),
-                )}
+                          <MenuItem value="none">
+                            <em>None</em>
+                          </MenuItem>
+                          {sharingUsers.map((item) => (
+                            <MenuItem value={item.id} key={item.id}>
+                              <em>{`${item.name} (Notification)`}</em>
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    <Grid item xs={2}>
+                      <TextFieldMaterial
+                        fullWidth
+                        value={notify.period}
+                        type="number"
+                        size="small"
+                        variant="outlined"
+                        onChange={(e) =>
+                          dispatch({
+                            field: `notification:${index}:period`,
+                            value: e.target.value as string,
+                          })
+                        }
+                      />
+                    </Grid>
+                    <Grid item xs={3}>
+                      <FormControl variant="outlined" size="small" fullWidth>
+                        <Select
+                          value={notify.periodType}
+                          onChange={(e) =>
+                            dispatch({
+                              field: `notification:${index}:periodType`,
+                              value: e.target.value as string,
+                            })
+                          }
+                        >
+                          {periodTypes.map((periodType) => (
+                            <MenuItem key={periodType} value={periodType}>
+                              {`${periodType}${notify.period === "1" ? "" : "s"} Before`}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    <Grid item xs={2}>
+                      <IconButton
+                        onClick={() => {
+                          dispatch({
+                            field: `notification:${index}:remove`,
+                          });
+                        }}
+                      >
+                        <CloseOutlinedIcon className={classes.closeIcon} />
+                      </IconButton>
+                    </Grid>
+                  </>
+                ))}
                 <Grid item xs={12}>
                   <Button
                     className={classes.addReminder}
@@ -1224,17 +1124,9 @@ const EventDetails = ({
                         label="Attached File:"
                         borderType="square"
                         onClick={handleChipClick}
-                        value={
-                          files.map((attachment) => attachment?.name || "") ||
-                          []
-                        }
+                        value={files.map((attachment) => attachment?.name || "") || []}
                         icon={<FileIcon width={13} height={13} />}
-                        onDeleteChip={(index) =>
-                          setFiles([
-                            ...files.slice(0, index),
-                            ...files.slice(index + 1),
-                          ])
-                        }
+                        onDeleteChip={(index) => setFiles([...files.slice(0, index), ...files.slice(index + 1)])}
                       />
                       {files ? (
                         <PdfPreview
@@ -1267,20 +1159,12 @@ const EventDetails = ({
                 </Grid>
               </Grid>
             </MuiPickersUtilsProvider>
-            <Grid
-              className={classes.actions}
-              container
-              alignItems="center"
-              justify="space-between"
-            >
+            <Grid className={classes.actions} container alignItems="center" justify="space-between">
               <Grid item className={classes.lastUpdated}>
                 {"Event update time goes here"}
               </Grid>
               <Grid item>
-                <Button
-                  className={classes.deleteButton}
-                  onClick={() => setIsOpenModalConfirm(true)}
-                >
+                <Button className={classes.deleteButton} onClick={() => setIsOpenModalConfirm(true)}>
                   Delete
                 </Button>
                 <Button
